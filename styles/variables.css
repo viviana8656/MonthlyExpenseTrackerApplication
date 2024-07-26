@@ -1,19 +1,6 @@
 :root {
-    /* Variable declarations */
-    /* COLORS */
-    --black: #000;
-    --black-with-opacity: rgba(0, 0, 0, 0.4);
-    --grey: #a3a3a3;
-    --grey-dark: #888;
-    --grey-darker: #3b3b3b;
-    --grey-dark-secondary: #00000020;
-    --grey-lighter: #d1d1d1;
-    --orange: #E2350D;
-    --orange-darker: #962309;
-    --white: #FFF;
-    --yellow: #FFC300;
-    --green: #137e13;
-    --red: #e90d0d;
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
 
 
     /* FONT */

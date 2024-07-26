@@ -1,15 +1,4 @@
-const setElementDisplayType = (id, type) => {
-    document.getElementById(id).style.display = type
-}
-
-const startApp = () => {
-    setElementDisplayType("modal","none")
-}
-
-startApp()
-
 document.addEventListener("DOMContentLoaded", function(){
-    console.log("kjhdfakjf")
     const budgetForm = document.getElementById("budget-form")
     const expenseForm = document.getElementById("expense-form")
     const expensesTableBody = document.querySelector("#expenses-table tbody")
@@ -42,33 +31,75 @@ document.addEventListener("DOMContentLoaded", function(){
         const name = document.getElementById("expense-category").value
         const amount = parseFloat(document.getElementById("expense-amount").value)
         const currency = document.getElementById("expense-currency").value
+        const index = document.getElementById("expense-index").value
 
         const expense = {name, amount, currency}
 
-        expenses.push(expense)
+        if (index === '') {
+            expenses.push(expense)
+        } else {
+            expenses[index] = expense
+        }
+
         localStorage.setItem("expenses",JSON.stringify(expenses))
-        addExpenseToTable(expense)
+        renderExpenses()
         expenseForm.reset()
+        closeExpenseModal()
     })
 
-    function addExpenseToTable(expense){
+    function renderExpenses() {
+        expensesTableBody.innerHTML ='';
+        expenses.forEach((expense, index)=>{
+            addExpenseToTable(expense,index)
+        })
+    }
+
+    function addExpenseToTable(expense, index){
         const row = document.createElement("tr")
         row.innerHTML =
         `
         <td>${expense.name}</td>
         <td>${expense.amount}</td>
         <td>${expense.currency}</td>
-        <td><button class="material-icons" onclick="setElementDisplayType('modal','block')">edit</button></td>
+        <td>
+        <button class="material-icons" onclick="editExpense(${index})">edit</button>
+        <button class="material-icons" onclick="deleteExpense(${index})">delete</button>
+        </td>
         `
-
         expensesTableBody.appendChild(row)
     }
     
     function generateCurrencyOption(currency){
         return createNode(`<option>${currency.name}</option>`,"select")
     }
+
+    window.editExpense = function(index){
+        console.log("gurrll")
+        const expense = expenses[index];
+        document.getElementById("expense-category").value = expense.name;
+        document.getElementById("expense-amount").value = expense.amount;
+        document.getElementById("expense-currency").value = expense.currency;
+        document.getElementById("expense-index").value = index;
+        openExpenseModal();
+    }
+
+    window.deleteExpense = function(index){
+        expenses.splice(index,1)
+        localStorage.setItem("expenses", JSON.stringify(expenses))
+        renderExpenses()
+    }
+
+    window.openExpenseModal = function(){
+        document.getElementById("modal").style.display = "block"
+    }
+
+    window.closeExpenseModal = function(){
+        document.getElementById("modal").style.display = "none"
+        expenseForm.reset()
+        document.getElementById("expense-index").value = ""
+    }
     
-    expenses.forEach(addExpenseToTable)
+    renderExpenses()
     document.getElementById("budget-amount").value = budget.amount
     document.getElementById("budget-currency").value = budget.currency
 })
