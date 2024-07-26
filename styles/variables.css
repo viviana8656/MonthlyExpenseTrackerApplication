@@ -1,0 +1,29 @@
+:root {
+    /* Variable declarations */
+    /* COLORS */
+    --black: #000;
+    --black-with-opacity: rgba(0, 0, 0, 0.4);
+    --grey: #a3a3a3;
+    --grey-dark: #888;
+    --grey-darker: #3b3b3b;
+    --grey-dark-secondary: #00000020;
+    --grey-lighter: #d1d1d1;
+    --orange: #E2350D;
+    --orange-darker: #962309;
+    --white: #FFF;
+    --yellow: #FFC300;
+    --green: #137e13;
+    --red: #e90d0d;
+
+
+    /* FONT */
+    --font-family-main: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+
+    /* SPACING */
+    --home-margin: 8rem;
+
+    /* MODALS */
+    --modal-overlay-z-index: 1000;
+    --modal-z-index: calc(var(--modal-overlay-z-index) + 1);
+}

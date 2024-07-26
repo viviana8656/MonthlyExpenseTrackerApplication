@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="./styles/main.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+    <title>Monthly Expense Tracker Application</title>
+</head>
+<body>
+    <div class="grid-container">
+        <header class="header-bar">
+                <h1>Monthly Expense Tracker Application</h1>
+        </header>
+        <section id="budget-section">
+            <h2>Budget</h2>
+            <form id="budget-form">
+                <label for="budget-amount">Amount:</label>
+                <input type="text" id="budget-amount" name="budget-amount" required>
+                <label for="budget-currency">Currency:</label>
+                <select name="currency-select" id="budget-currency">
+                </select>
+            <button type="submit"> Save Budget</button>
+            </form>
+        </section>
+        <section id="graphics-section">
+            Graphics
+        </section>
+        <section id="expenses-section">
+            <h2>Expenses</h2>
+                <div style="overflow-x:auto;">
+                    <table id="expenses-table" name="expenses-table" class="table">
+                        <thead>
+                            <tr>
+                                <th>Expense</th>
+                                <th>Ammount</th>
+                                <th>Currency</th>
+                                <th><button onclick="openExpenseModal()"> Add Expense</button></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+        </section>
+    </div>
+    <div id="modal" class="modal-container">
+		<div class="modal-overlay"></div>
+		<div class="modal">
+            <h2>Expense</h2>
+            <form id="expense-form">
+                <label for="expense-category">Expense:</label>
+                <input type="text" id="expense-category" name="expense-category" required/>
+
+                <label for="expense-amount">Amount:</label>
+                <input type="number" id="expense-amount" name="expense-amount" required>
+
+                <label for="expense-currency">Currency:</label>
+                <select name="currency-select" id="expense-currency">
+                </select>
+
+                <button class="material-icons" type="submit"> save </button>
+                <button class="material-icons" onclick="deleteExpense()"> delete </button>
+            </form>
+		</div>
+	</div>
+    <script src="https://cdn.jsdeliver.net/npm/chart.js"></script>
+    <script type="text/javascript" src="./scripts/main.js"></script>
+    <script type="text/javascript" src="./scripts/display_manager_util.js"></script>
+    <script type="text/javascript" src="./scripts/local_storage_manager_util.js"></script>
+</body>
+</html>
