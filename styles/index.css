@@ -1,5 +1,3 @@
-/** MODAL STYLES **/
-
 body {
 	font-family:  var(--font-family-main);
 	margin: 0;
@@ -247,5 +245,14 @@ button:hover {
 
 	select{
 		max-width: 100%;
+	}
+	#summary-table{
+		width: 80%;
+	}
+	.table-container {
+		max-height: 15rem;
+		max-width: 25rem;
+		overflow-y: auto;
+		overflow-x: auto;
 	}
 }

@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function(){
+document.addEventListener("DOMContentLoaded", async function(){
     const budgetForm = document.getElementById("budget-form")
     const expenseForm = document.getElementById("expense-form")
     const categoryForm = document.getElementById("category-form")
@@ -10,10 +10,13 @@ document.addEventListener("DOMContentLoaded", function(){
     const totalExpenses = document.getElementById("total-expenses")
     const leftBudget = document.getElementById("total-left-budget")
 
-    let budget=JSON.parse(localStorage.getItem("budget")) || {amount:0, currency:"Dolar"}
+    const BASE_URL = "https://openexchangerates.org/api/";
+
+
+    let budget=JSON.parse(localStorage.getItem("budget")) || {amount:0, currency:"United States Dollar"}
     let expenses = JSON.parse(localStorage.getItem("expenses")) || [{name:'Groceries',amount:'2000', currency:'Dolar'},{name:'Electricity',amount:'100',currency:'Dolar'},{name:'Loan',amount:'500',currency:'Colon'},{name:'Shopping',amount:'100',currency:'Euro'}]
-    let categories = JSON.parse(localStorage.getItem("categories")) || [{name:"food", amount:3}, {name:"studies", amount:1}]
-    let currencies = JSON.parse(localStorage.getItem("currencies")) || [{name:"Dolar",convertionValueToDolar:"1"},{name:"Colon",convertionValueToDolar:"530"},{name:"Euro",convertionValueToDolar:"0.34"}]
+    let categories = JSON.parse(localStorage.getItem("categories")) || []
+    let currencies = await getCurrenciesList();
 
     currencySelects.forEach((currencySelect)=>{
         currencySelect.innerHTML = ''
@@ -25,10 +28,12 @@ document.addEventListener("DOMContentLoaded", function(){
         event.preventDefault();
         const amount = parseFloat(document.getElementById("budget-amount").value)
         const currency = document.getElementById("budget-currency").value
+        const code = currencies.filter((e)=>e.name==currency)[0].code
 
-        budget = {amount, currency}
+        budget = {amount, currency,code}
 
         renderSummary()
+        renderExpenses()
         localStorage.setItem("budget", JSON.stringify(budget))
     })
 
@@ -72,38 +77,97 @@ document.addEventListener("DOMContentLoaded", function(){
     categoryForm.addEventListener("submit", function(event){
         event.preventDefault();
         const name = document.getElementById("category-name").value;
-        const amount = 0;
         const index = document.getElementById("category-index").value
+        const amount = 0;
 
         const category = {name, amount}
 
         if (index === '') {
             categories.push(category)
         } else {
-            categories[index] = category
+            expenses.forEach((ex)=>{
+                if(ex.category == categories[index].name){
+                    ex.category = name
+                }
+            })
+            categories[index] = {name, amount: categories[index].amount}
         }
         
         localStorage.setItem("categories", JSON.stringify(categories))
+        localStorage.setItem("expenses", JSON.stringify(expenses))
         renderCategories()
         categoryForm.reset()
         closeCategoryModal();
+        renderExpenses()
         renderSummary()
     })
 
     const ctx = document.getElementById('expensesChart').getContext('2d');
     let expensesChart;
 
+    async function getCurrencyListFromAPI() {
+        const GET_CURRENCIES_VALUES_ENDPOINT = `${BASE_URL}latest.json`
+        const GET_CURRENCIES_ENDPOINT = `${BASE_URL}currencies.json`
+        let conversions = await fetch(GET_CURRENCIES_VALUES_ENDPOINT+'?app_id=71fed9da15164bc9a95f328c1ae4c7e5')
+        .then((response) => response.json())
+        .catch((error) => console.error(error));
+        conversions = conversions.rates
+
+        const countries = await fetch(GET_CURRENCIES_ENDPOINT)
+        .then((response) => response.json())
+       .catch((error) => console.error(error));
+        let result = [];
+
+        for (const code in conversions) {
+            if (countries[code] && conversions[code] !== undefined) {
+            result.push({
+                code: code,
+                name: countries[code],
+                conversionValue: conversions[code]
+            });
+            }
+        }
+
+        countryCodes = ["ARS", "AWG", "BBD", "BMD", "BOB", "BRL", "BSD", "BZD", "CAD", "CLF", "CLP", "COP", "CRC", "CUC", "CUP", "DOP", "GTQ", "GYD", "HNL", "HTG", "JMD", "KYD", "MXN", "NIO", "PAB", "PEN", "PYG", "SRD", "SVC", "TTD", "USD", "UYU", "VES"]
+        
+        result = result.filter((element)=>countryCodes.includes(element.code))
+
+
+        return result;
+    }
+
+    async function getCurrenciesList(){
+        let currenciesList = localStorage.getItem("currencies");
+    
+        if (!!currenciesList && currenciesList.length) {
+          console.log('Using Currencies from localstorage');
+          return JSON.parse(currenciesList);
+        } 
+        
+        console.log('Using Currencies from API');
+
+        currenciesList = await getCurrencyListFromAPI();
+        localStorage.setItem("currencies", JSON.stringify(currenciesList));
+        return JSON.parse(currenciesList);
+      };
+
     function renderSummary(){
         let totalEx = 0;
 
         expenses.forEach((expense) => {
-            totalEx += convertToMoney(expense.amount, expense.currency);
+            totalEx += convertCurrency(expense.amount, expense.currency, budget.currency);
         });
 
-        totalExpenses.value = totalEx;
+        totalExpenses.value = totalEx.toFixed(2);
 
         let totalLeftBudget = budget.amount - totalEx;
-        leftBudget.value = totalLeftBudget;
+        if(totalLeftBudget < 0){
+            leftBudget.style.color = 'rgb(255,0,0)'
+        }else{
+            leftBudget.style.color = 'rgb(0,0,0)'
+        }
+        leftBudget.value = totalLeftBudget.toFixed(2);
+
 
         summaryTableBody.innerHTML = '';
         let summaryData = [];
@@ -112,11 +176,11 @@ document.addEventListener("DOMContentLoaded", function(){
             let categoryTotalAmount = 0;
             expenses.forEach((expense) => {
                 if (category.name == expense.category) {
-                    categoryTotalAmount += convertToMoney(expense.amount, expense.currency);
+                    categoryTotalAmount += convertCurrency(expense.amount, expense.currency,budget.currency);
                 }
             });
-            summaryData.push({ name: category.name, amount: categoryTotalAmount });
-            addSummaryToTable(category.name, categoryTotalAmount);
+            summaryData.push({ name: category.name, amount: categoryTotalAmount.toFixed(2) });
+            addSummaryToTable(category.name, categoryTotalAmount.toFixed(2));
         });
 
         renderChart(summaryData);
@@ -130,6 +194,17 @@ document.addEventListener("DOMContentLoaded", function(){
             expensesChart.destroy();
         }
 
+        const colors = {
+            green: 'rgba(34, 139, 34, 1)',        // ForestGreen
+            lightGreen: 'rgba(144, 238, 144, 1)', // LightGreen
+            darkGreen: 'rgba(0, 100, 0, 1)',      // DarkGreen
+            yellow: 'rgba(255, 255, 0, 1)',       // Yellow
+            darkYellow: 'rgba(204, 204, 0, 1)',   // DarkGoldenrod
+            blue: 'rgba(30, 144, 255, 1)',        // DodgerBlue
+            lightBlue: 'rgba(173, 216, 230, 1)',  // LightBlue
+            darkBlue: 'rgba(0, 0, 139, 1)'        // DarkBlue
+          };
+        
         expensesChart = new Chart(ctx, {
             type: 'pie',
             data: {
@@ -138,22 +213,17 @@ document.addEventListener("DOMContentLoaded", function(){
                     label: 'Expenses by Category',
                     data: amounts,
                     backgroundColor: [
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(153, 102, 255, 0.2)',
-                        'rgba(255, 159, 64, 0.2)'
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)'
-                    ],
-                    borderWidth: 1
+                        colors.green,
+                        colors.lightGreen,
+                        colors.darkGreen,
+                        colors.yellow,
+                        colors.darkYellow,
+                        colors.blue,
+                        colors.lightBlue,
+                        colors.darkBlue
+                      ],
+                    borderColor: 'rgba(255, 255, 255, 1)',
+                    borderWidth: 2
                 }]
             },
             options: {
@@ -165,7 +235,7 @@ document.addEventListener("DOMContentLoaded", function(){
                     tooltip: {
                         callbacks: {
                             label: function(tooltipItem) {
-                                return tooltipItem.label + ': $' + tooltipItem.raw.toFixed(2);
+                                return tooltipItem.label + ': ' + budget.code +' '+ tooltipItem.raw;
                             }
                         }
                     }
@@ -181,10 +251,6 @@ document.addEventListener("DOMContentLoaded", function(){
             <td>${amount}</td>
         `
         summaryTableBody.appendChild(row)
-    }
-
-    function convertToMoney(amount, currency){
-        return amount
     }
 
     function renderCategories(){
@@ -205,10 +271,16 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
     function addCategoryToTable(category,index){
+        amount = 0
+        expenses.forEach((ex)=>{
+            if(ex.category == category.name){
+                amount++;
+            }
+        })
         const row = document.createElement("tr")
         row.innerHTML=`
             <td>${category.name}</td>
-            <td>${category.amount}</td>
+            <td>${amount}</td>
             <td>
             <button class="material-icons" id="edit-button" onclick="editCategory(${index})">edit</button>
             <button class="material-icons" id="delete-button" onclick="deleteCategory(${index})">delete</button>
@@ -226,8 +298,25 @@ document.addEventListener("DOMContentLoaded", function(){
         renderSummary()
     }
 
+    function convertCurrency(amount, fromCurrency, toCurrency) {
+        let fromConvertion = 0;
+        let toConvertion = 0;
+        currencies.forEach((currency)=>{
+            if (currency.name == fromCurrency) {
+                fromConvertion = currency.conversionValue
+            }
+            if (currency.name == toCurrency){
+                toConvertion = currency.conversionValue
+            }
+        })
+        const amountInUSD = amount / fromConvertion;
+        const amountInTargetCurrency = (amountInUSD * toConvertion);
+        return amountInTargetCurrency;
+    }
+
     function addExpenseToTable(expense, index){
         const row = document.createElement("tr")
+        convertionRate = convertCurrency(expense.amount, expense.currency, budget.currency).toFixed(2);
         row.innerHTML =
         `
         <td>${expense.date}</td>
@@ -235,6 +324,7 @@ document.addEventListener("DOMContentLoaded", function(){
         <td>${expense.name}</td>
         <td>${expense.amount}</td>
         <td>${expense.currency}</td>
+        <td>${convertionRate}</td>
         <td>
         <button class="material-icons" id="edit-button" onclick="editExpense(${index})">edit</button>
         <button class="material-icons" id="delete-button" onclick="deleteExpense(${index})">delete</button>
@@ -291,7 +381,7 @@ document.addEventListener("DOMContentLoaded", function(){
     window.deleteCategory = function(index){
         const category = categories[index];
         if(category.amount > 0){
-            window.alert("This category has been associated to certain expenses, therefore it can not be removed")
+            window.alert("This category has been associated with specific expenses and, therefore, cannot be removed")
             return
         }
         categories.splice(index,1);
@@ -318,7 +408,6 @@ document.addEventListener("DOMContentLoaded", function(){
         categoryForm.reset()
         document.getElementById("category-index").value = ""
     }
-    
     renderExpenses()
     renderCategories()
     document.getElementById("budget-amount").value = budget.amount

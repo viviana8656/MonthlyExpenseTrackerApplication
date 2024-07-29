@@ -1,18 +1,13 @@
-function checkDecimalInput(){
-    console.log("alksd")
-    const inputElement = document.getElementById('budget-amount');
+function checkDecimalInput(id){
+    const inputElement = document.getElementById(id);
     
-    // Obtener el valor del input y convertirlo a número
     let value = parseFloat(inputElement.value);
 
-    // Si el valor no es un número válido, asignar 0
-    if (isNaN(value)) {
-        value = null;
+    if (isNaN(value) || parseFloat(value) < 0) {
+        value = 0;
     }
 
-    // Redondear el valor a 2 decimales
-    value = value.toFixed(3);
+    value = value.toFixed(2);
 
-    // Actualizar el valor del input
     inputElement.value = value;
 }

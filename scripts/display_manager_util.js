@@ -4,14 +4,12 @@ let currentBudget = 0;
 
 
 const displayCurrencies = () => {
-    console.log("ok?")
     const currencySelects = document.getElementsByName("currency-select")
     currencySelects.forEach((currencySelect)=>{
     currencySelect.innerHTML = ''
     const currencyOptions = currencies.map((item)=>
         generateCurrencyOption(item)).map((item)=>item.outerHTML).join(" ")
     currencySelect.innerHTML = currencyOptions})
-    //currencySelect.appendChild(currencyOptions)
 }
 
 const generateCurrencyOption = (currency) => {
@@ -29,7 +27,6 @@ const generateTableItem = (item) => {
 const createNode = (stringNode, nodeElement = "div", classes = []) => {
     const node = document.createElement(nodeElement);
     node.innerHTML = stringNode;
-    //node.classList.add(classes);
     return node;
   };
 
@@ -37,14 +34,8 @@ const displayExpenses = () => {
     const expensesTable = document.getElementById("expenses-table")
     const expensesRows = expenses.map((item)=>generateTableItem(item))
     expensesRows.forEach((item)=>expensesTable.appendChild(item))
-    //console.log(expensesRows)
-    //expensesTable.appendChild(document.createChild(expensesRows))
 }
 
 const displayCurrentBudget = () => {
     document.getElementById("budget-amount").value = currentBudget;
 }
-
-//displayCurrentBudget()
-//displayCurrencies()
-//displayExpenses()
