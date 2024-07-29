@@ -1,6 +1,11 @@
 :root {
-    --primary-color: #007bff;
+    --primary: #3cb371;
     --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --white: #ffffff;
+    --light: #f8f9fa;
+    --dark: #343a40;
 
 
     /* FONT */
@@ -8,7 +13,7 @@
     sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 
     /* SPACING */
-    --home-margin: 8rem;
+    --container-padding:1rem
 
     /* MODALS */
     --modal-overlay-z-index: 1000;

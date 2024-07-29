@@ -9,65 +9,153 @@
     <title>Monthly Expense Tracker Application</title>
 </head>
 <body>
+    <header class="header-bar">
+        <h1>Monthly Expense Tracker Application</h1>
+    </header>
     <div class="grid-container">
-        <header class="header-bar">
-                <h1>Monthly Expense Tracker Application</h1>
-        </header>
         <section id="budget-section">
             <h2>Budget</h2>
             <form id="budget-form">
-                <label for="budget-amount">Amount:</label>
-                <input type="text" id="budget-amount" name="budget-amount" required>
-                <label for="budget-currency">Currency:</label>
-                <select name="currency-select" id="budget-currency">
+                <div class="form-group">
+                    <input type="text" step="0.01" min="0" placeholder="0.00" id="budget-amount" name="budget-amount" class="decimal-input" onchange="checkDecimalInput()" required>
+                    <label for="budget-amount">Amount</label>
+                </div class="form-group">
+                    <select name="currency-select" id="budget-currency">
                 </select>
-            <button type="submit"> Save Budget</button>
+                <button type="submit" class="material-icons" id="save-button">save</button>
             </form>
         </section>
+        <section id="category-section">
+            <h2>Categories</h2>
+            <div class="table-container">
+                <table id="categories-table" name="categories-table" class="table">
+                    <thead>
+                        <tr>
+                            <th>Category Name</th>
+                            <th>Expenses Associated</th>
+                            <th><button class="add-button" onclick="openCategoryModal()">Add Category</button></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </section>
         <section id="graphics-section">
-            Graphics
+            <h2>Analytics</h2>
+            <div class="horizontal-group">
+                <div class="vertical-group">
+                    <div class="horizontal-group">
+                        <div class="horizontal-group">
+                            <div class="form-group">
+                                <input type="text" id="total-expenses" name="total-expenses" disabled>
+                                <label for="total-expenses">Total expenses</label>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="total-left-budget" name="total-left-budget" disabled>
+                                <label for="total-left-budget">Budget Left</label>
+                            </div>
+                        </div>
+                    </div>
+                        <div class="table-container">
+                            <table id="summary-table" name="summary-table" class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Total expenses</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                </div>
+                <canvas id="expensesChart" style="width:50%;max-width:400px;max-height:400px;"></canvas>
+            </div>
         </section>
         <section id="expenses-section">
             <h2>Expenses</h2>
                 <div style="overflow-x:auto;">
-                    <table id="expenses-table" name="expenses-table" class="table">
-                        <thead>
-                            <tr>
-                                <th>Expense</th>
-                                <th>Ammount</th>
-                                <th>Currency</th>
-                                <th><button onclick="openExpenseModal()"> Add Expense</button></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+                    <div class="table-container">
+                        <table id="expenses-table" name="expenses-table" class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Expense Name</th>
+                                    <th>Amount</th>
+                                    <th>Currency</th>
+                                    <th><button class="add-button" onclick="openExpenseModal()">
+                                        Add Expense
+                                    </button></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
         </section>
     </div>
-    <div id="modal" class="modal-container">
+    <div id="category-modal" class="modal-container">
+		<div class="modal-overlay"></div>
+		<div class="modal">
+            <h2>Categories</h2>
+            <form id="category-form">
+                <div class="form-group">
+                    <input type="text" id="category-name" placeholder="Category Name" required>
+                    <label for="category-name">Category Name</label>
+                </div>
+                <input type="hidden" id="category-index">
+                <button type="submit">Save Category</button>
+                <button type="button" onclick="closeCategoryModal()">Cancel</button>
+            </form>
+        </div>
+    </div>
+    <div id="expense-modal" class="modal-container">
 		<div class="modal-overlay"></div>
 		<div class="modal">
             <h2>Expense</h2>
             <form id="expense-form">
-                <label for="expense-category">Expense:</label>
-                <input type="text" id="expense-category" name="expense-category" required/>
 
-                <label for="expense-amount">Amount:</label>
-                <input type="number" id="expense-amount" name="expense-amount" required>
-
-                <label for="expense-currency">Currency:</label>
-                <select name="currency-select" id="expense-currency">
-                </select>
-
+                
+                <div class="form-group">
+                    <select style="height: 3rem" name="category-select" id="expense-category"></select>
+                </div>
+                
+                <div class="form-group">
+                    <input type="text" id="expense-name" name="expense-name" required/>
+                    <label for="expense-name">Expense:</label>
+                </div>
+                
+                <div class="form-group">
+                    <input type="number" id="expense-amount" name="expense-amount" required>
+                    <label for="expense-amount">Amount</label>
+                </div>
+                
+                <div class="form-group">
+                    <select style="height: 3rem" name="currency-select" id="expense-currency"></select>
+                </div>
+                
                 <input type="hidden" id="expense-index">
-                <button class="material-icons" type="submit"> save </button>
-                <button class="material-icons" onclick="deleteExpense()"> delete </button>
+                <div class="form-group">
+                    <input type="date" id="expense-date" name="expense-date" required/>
+                    <label for="expense-date">Date:</label>
+                </div>
+                <div class="form-group">
+                    <button type="submit">Save Expense</button>
+                </div>
+                <div class="form-group">
+                    <button type="button" onclick="closeExpenseModal()">Cancel</button>
+                </div>
             </form>
 		</div>
 	</div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="text/javascript" src="./scripts/main.js"></script>
     <script type="text/javascript" src="./scripts/display_manager_util.js"></script>
+    <script type="text/javascript" src="./scripts/currency_converter_util.js"></script>
+    <script type="text/javascript" src="./scripts/input_verification_util.js"></script>
     <script type="text/javascript" src="./scripts/local_storage_manager_util.js"></script>
 </body>
 </html>
